@@ -1,8 +1,20 @@
-import {query} from 'jsonpath';
-import {createSourceFile, ScriptTarget, SyntaxKind, getLeadingCommentRanges, getTrailingCommentRanges, forEachChild, SourceFile, Node, CommentRange} from 'typescript';
-import flatMap from 'lodash/flatMap';
+const jsonpath = require('jsonpath');
+const flatMap = require('lodash/flatMap');
+import {
+  createSourceFile,
+  ScriptTarget,
+  SyntaxKind,
+  getLeadingCommentRanges,
+  getTrailingCommentRanges,
+  forEachChild,
+  SourceFile,
+  Node,
+  CommentRange
+} from 'typescript';
+
 import { MatchType, Rule } from './types';
 
+const query = jsonpath.query.bind(jsonpath);
 
 export function matchSource(source: string, pathQueries: string[]) {
   return matchBatch(createSourceFile('file.ts', source, ScriptTarget.Latest), pathQueries);
@@ -41,7 +53,7 @@ export function checkRuleForSource(source: string, rule: Rule) {
 export function decorateWithComments(sourceFile: SourceFile, currentNode?: Node) {
   const decorateWithCommentText = (comment: CommentRange) => (comment as any).text = sourceFile.getFullText().slice(comment.pos, comment.end);
 
-  forEachChild(currentNode || sourceFile, node => {
+  forEachChild(currentNode || sourceFile, (node: Node) => {
     const leadingCommentRanges = getLeadingCommentRanges(sourceFile.getFullText(), node.getFullStart()) || [];
     const trailingCommentRanges = getTrailingCommentRanges(sourceFile.getFullText(), node.getEnd()) || [];
 
@@ -51,7 +63,7 @@ export function decorateWithComments(sourceFile: SourceFile, currentNode?: Node)
     (node as any).leadingComments = leadingCommentRanges;
     (node as any).trailingComments = trailingCommentRanges;
 
-    forEachChild(node, childNode => decorateWithComments(sourceFile, childNode));
+    forEachChild(node, (childNode: Node) => decorateWithComments(sourceFile, childNode));
   });
 }
 
