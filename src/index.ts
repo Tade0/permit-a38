@@ -1,5 +1,6 @@
 const jsonpath = require('jsonpath');
 const flatMap = require('lodash/flatMap');
+const last = require('lodash/last');
 import {
   createSourceFile,
   ScriptTarget,
@@ -9,10 +10,10 @@ import {
   forEachChild,
   SourceFile,
   Node,
-  CommentRange
+  CommentRange,
 } from 'typescript';
 
-import { MatchType, Rule } from './types';
+import { MatchType, MultiSelectFilter, Rule, RuleType, SingleSelectFilter } from './types';
 
 const query = jsonpath.query.bind(jsonpath);
 
@@ -46,8 +47,16 @@ export function checkRuleForSource(source: string, rule: Rule) {
   const sourceFile = createSourceFile('file.ts', source, ScriptTarget.Latest);
 
   decorateWithComments(sourceFile);
+  decorateWithPrevious(sourceFile);
 
-  return checkRule(sourceFile, rule);
+  switch (rule.type) {
+    case RuleType.SingleSelectFilter:
+      return checkSingleSelectFilterRule(sourceFile, rule);
+    case RuleType.MultiSelectFilter:
+      return checkMultiSelectFilterRule(sourceFile, rule);
+    default:
+      return false;
+  }
 }
 
 export function decorateWithComments(sourceFile: SourceFile, currentNode?: Node) {
@@ -67,8 +76,33 @@ export function decorateWithComments(sourceFile: SourceFile, currentNode?: Node)
   });
 }
 
-export function checkRule(node: Object, rule: Rule) {
-  const selected = match(node, rule.select);
+export function decorateWithPrevious(sourceFile: SourceFile) {
+  const previousStack: Node[] = [undefined];
+
+  const ends: Map<number, Node & { previous?: Node }> = new Map();
+
+  const doTheDecoration = (node: Node & { previous?: any }) => {
+    const previousNode = last(previousStack);
+
+    if (previousNode) {
+      const { previous, ...restProps } = previousNode;
+
+      node.previous = restProps;
+    }
+
+    previousStack.push(undefined);
+
+    forEachChild(node, doTheDecoration);
+
+    previousStack.pop();
+    previousStack[previousStack.length - 1] = node;
+  };
+
+  doTheDecoration(sourceFile);
+}
+
+export function checkSingleSelectFilterRule(node: Object, rule: SingleSelectFilter) {
+  const selected = match(node, sanitize(rule.select));
 
   console.debug(`matching selection "${rule.select}": ${selected.length}`);
 
@@ -77,7 +111,9 @@ export function checkRule(node: Object, rule: Rule) {
       return acc;
     }
 
-    const hasMatch = match([item], rule.filter).length > 0;
+    debugger;
+
+    const hasMatch = match([item], sanitize(rule.filter)).length > 0;
 
     switch (rule.matchType) {
       case MatchType.NONE:
@@ -86,4 +122,33 @@ export function checkRule(node: Object, rule: Rule) {
         return acc && hasMatch;
     }
   }, true);
+}
+
+export function checkMultiSelectFilterRule(node: Object, rule: MultiSelectFilter) {
+  const [firstSelect, ...restSelect] = rule.select.map(pathQuery => sanitize(pathQuery));
+  const [firstFilter, ...restFilter] = rule.filter.map(pathQuery => sanitize(pathQuery));
+
+  const selected = restSelect
+    .reduce((acc, pathQuery) => {
+      return match(acc, pathQuery);
+    }, match(node, firstSelect));
+
+  return selected.reduce((acc, item) => {
+
+    const hasMatch = restFilter
+    .reduce((acc, pathQuery) => {
+      return match(acc, pathQuery);
+    }, match(item, firstFilter)).length > 0;
+
+    switch (rule.matchType) {
+      case MatchType.NONE:
+        return acc && !hasMatch;
+      case MatchType.ALL:
+        return acc && hasMatch;
+    }
+  }, true);
+}
+
+function sanitize(pathQuery: string) {
+  return pathQuery.replace(/[\n\r]+\s*/g, '');
 }
