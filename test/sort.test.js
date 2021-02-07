@@ -2,7 +2,7 @@ const {checkRuleForSource} = require('../lib');
 const test = require('ava');
 
 test('Sort good', t => {
-  const sorte = `
+  const sort = `
   export interface Interface {
     a: string;
     b: string;
@@ -10,7 +10,7 @@ test('Sort good', t => {
     d: string;
   }`;
 
-  t.is(checkRuleForSource(sorte, {
+  t.is(checkRuleForSource(sort, {
     select: `$..members[?(
       @.kind===#PropertySignature# &&
       @.previous &&

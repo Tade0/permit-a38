@@ -79,8 +79,6 @@ export function decorateWithComments(sourceFile: SourceFile, currentNode?: Node)
 export function decorateWithPrevious(sourceFile: SourceFile) {
   const previousStack: Node[] = [undefined];
 
-  const ends: Map<number, Node & { previous?: Node }> = new Map();
-
   const doTheDecoration = (node: Node & { previous?: any }) => {
     const previousNode = last(previousStack);
 
@@ -110,8 +108,6 @@ export function checkSingleSelectFilterRule(node: Object, rule: SingleSelectFilt
     if (!acc) {
       return acc;
     }
-
-    debugger;
 
     const hasMatch = match([item], sanitize(rule.filter)).length > 0;
 
