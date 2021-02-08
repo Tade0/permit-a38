@@ -18,9 +18,7 @@ const getterReturn = {
       .initializer.body.statements
     `
   ],
-  filter: [`$..[?(
-    @.kind==#ReturnStatement#
-  )]`],
+  filter: [`$[?(@.kind==#ReturnStatement#)]`],
   matchType: 'all',
   type: 'multi-select-filter'
 };
@@ -61,6 +59,7 @@ test('getter-return good', t => {
 
     Object.defineProperty(p, "age", {
       get: function (){
+          console.log(x);
           return 1;
       }
     });
