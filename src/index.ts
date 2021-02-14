@@ -32,13 +32,20 @@ export function matchBatch(sourceFile: Object, pathQueries: string[]) {
 }
 
 export function match(node: Object, pathQuery: string): Object[] {
-  const pathQueryWithKinds = pathQuery.replace(/(#.*?#)/g, keyword => {
-    if (SyntaxKind[keyword.slice(1, -1)]) {
-      return SyntaxKind[keyword.slice(1, -1)];
-    }
+  const pathQueryWithKinds = pathQuery
+    .replace(/\??[A-Z]\w+/g, token => {
+      const keyword = token.replace(/^\?/, '');
 
-    return keyword;
-  })
+      if (SyntaxKind[keyword]) {
+        if (token.startsWith('?')) {
+          return `.kind===${SyntaxKind[keyword]}`;
+        } else {
+          return `@.kind===${SyntaxKind[keyword]}`;
+        }
+      }
+
+      return keyword;
+    })
 
   return query(node, pathQueryWithKinds);
 }
@@ -79,13 +86,13 @@ export function decorateWithComments(sourceFile: SourceFile, currentNode?: Node)
 export function decorateWithPrevious(sourceFile: SourceFile) {
   const previousStack: Node[] = [undefined];
 
-  const doTheDecoration = (node: Node & { previous?: any }) => {
+  const doTheDecoration = (node: Node & { __previous?: any }) => {
     const previousNode = last(previousStack);
 
     if (previousNode) {
       const { previous, ...restProps } = previousNode;
 
-      node.previous = restProps;
+      node.__previous = restProps;
     }
 
     previousStack.push(undefined);

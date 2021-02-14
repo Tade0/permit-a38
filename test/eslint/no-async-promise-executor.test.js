@@ -2,8 +2,8 @@ const {checkRuleForSource} = require('../../lib');
 const test = require('ava');
 
 const noAsyncPromiseExecutor = {
-  select: '$..[?(@.kind===#NewExpression# && @.expression.escapedText==="Promise")]',
-  filter: '$[*].arguments[0].modifiers[?(@.kind===#AsyncKeyword#)]',
+  select: '$..[?(NewExpression && @.expression.escapedText==="Promise")]',
+  filter: '$[*].arguments[0].modifiers[?(AsyncKeyword)]',
   matchType: 'none',
   type: 'single-select-filter'
 };

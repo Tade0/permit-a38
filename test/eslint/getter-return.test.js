@@ -4,21 +4,21 @@ const test = require('ava');
 const getterReturn = {
   select: [
     `$..[?(
-      @.kind==#CallExpression# &&
-      @.expression.kind==#PropertyAccessExpression# &&
+      CallExpression &&
+      @.expression?PropertyAccessExpression &&
       @.expression.name.escapedText=="defineProperty"
     )]
     .arguments[2]
     `,
-    `$..[?(@.kind==#ObjectLiteralExpression#)]
+    `$..[?(ObjectLiteralExpression)]
       .properties[?(
-        @.kind==#PropertyAssignment# &&
+        PropertyAssignment &&
         @.name.escapedText=="get"
       )]
       .initializer.body.statements
     `
   ],
-  filter: [`$[?(@.kind==#ReturnStatement#)]`],
+  filter: [`$[?(ReturnStatement)]`],
   matchType: 'all',
   type: 'multi-select-filter'
 };

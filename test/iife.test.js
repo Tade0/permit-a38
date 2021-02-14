@@ -4,10 +4,10 @@ const test = require('ava');
 const enforceIIFEcall = {
   select: `$..[?(
     @.expression &&
-    @.expression.kind===#ParenthesizedExpression# &&
-    (@.expression.expression.kind===#FunctionExpression# || @.expression.expression.kind===#ArrowFunction#)
+    @.expression?ParenthesizedExpression &&
+    (@.expression.expression?FunctionExpression || @.expression.expression?ArrowFunction)
   )]`,
-  filter: '$[?(@.kind===#CallExpression#)]',
+  filter: '$[?(CallExpression)]',
   matchType: 'all',
   type: 'single-select-filter'
 };

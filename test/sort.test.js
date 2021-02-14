@@ -12,11 +12,11 @@ test('Sort good', t => {
 
   t.is(checkRuleForSource(sort, {
     select: `$..members[?(
-      @.kind===#PropertySignature# &&
-      @.previous &&
-      @.previous.kind===#PropertySignature#
+      PropertySignature &&
+      @.__previous &&
+      @.__previous?PropertySignature
     )]`,
-    filter: '$[?(@.name.escapedText > @.previous.name.escapedText)]',
+    filter: '$[?(@.name.escapedText > @.__previous.name.escapedText)]',
     matchType: 'all',
     type: 'single-select-filter'
   }), true);
@@ -33,11 +33,11 @@ test('Sort bad', t => {
 
   t.is(checkRuleForSource(sorte, {
     select: `$..members[?(
-      @.kind===#PropertySignature# &&
-      @.previous &&
-      @.previous.kind===#PropertySignature#
+      PropertySignature &&
+      @.__previous &&
+      @.__previous?PropertySignature
     )]`,
-    filter: '$[?(@.name.escapedText > @.previous.name.escapedText)]',
+    filter: '$[?(@.name.escapedText > @.__previous.name.escapedText)]',
     matchType: 'all',
     type: 'single-select-filter'
   }), false);
