@@ -109,7 +109,7 @@ export function decorateWithPrevious(sourceFile: SourceFile) {
 export function checkSingleSelectFilterRule(node: Object, rule: SingleSelectFilter) {
   const selected = match(node, sanitize(rule.select));
 
-  console.debug(`matching selection "${rule.select}": ${selected.length}`);
+  // console.debug(`matching selection "${rule.select}": ${selected.length}`);
 
   return selected.reduce((acc, item) => {
     if (!acc) {

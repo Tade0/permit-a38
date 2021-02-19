@@ -2,7 +2,7 @@
   "name": "permit-a38",
   "version": "1.0.0",
   "description": "An ESLint plugin plugin",
-  "main": "script.js",
+  "main": "lib/index.js",
   "scripts": {
     "start": "node script.js",
     "build": "rollup -c rollup.config.js",
